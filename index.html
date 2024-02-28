@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kino</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="settings">
+            <form action="#">
+                <fieldset>
+                    <label for="miejsca">
+                        Miejsca w kinie
+                        <input type="number" id="miejsca" name="miejsca">
+                    </label>
+                    <label for="miejsca-na-rzad">
+                        Miejsca na rząd
+                        <input type="number" id="miejsca-na-rzad" name="miejsca-na-rzad">
+                    </label>
+                    <button id="create">Utwórz kino</button>
+                </fieldset>
+            </form>   
+            <div class="ticket-settings">
+                <p>Cena</p>
+                <label for="price-setting-adult">
+                    Bilet normalny
+                    <input type="text" id="price-setting-adult" name="price-setting-adult">
+                </label>
+                <label for="price-setting-child">
+                    Bilet ulgowy
+                    <input type="text" id="price-setting-child" name="price-setting-adult">
+                </label>
+                <p>Aktualizuje się przy rezerwacji</p>
+            </div>
+        </div>
+
+        <div class="cinema-wrapper">
+            <!-- TODO: make nowrap and extend to right -->
+            <div class="cinema"></div>
+            <div class="tickets">
+                <label for="tickets-adult">
+                    Bilety normalne:
+                    <input type="number" min="0" max="0" id="tickets-adult" name="tickets-adult" value="0">
+                </label>
+                <label for="tickets-child">
+                    Bilety ulgowe:
+                    <input type="number" min="0" max="0" id="tickets-child" name="tickets-child" value="0">
+                </label>
+            </div>
+            <button id="reserve">Zarezerwuj</button>
+            <div class="cena-wrapper">
+                <h5>Cena: </h5>
+                <h5 class="cena"></h5>
+                <h5> zł</h5>
+            </div>
+            <div class="reserved-seats-wrapped">
+                <h5>Zarezerwowane miejsca: </h5>
+                <ul class="reserved-seats-display">
+                </ul>
+            </div>
+        </div>
+    </div>
+    <script src="main.js"></script>
+</body>
+</html>
