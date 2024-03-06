@@ -13,7 +13,7 @@ const miejsca = document.querySelector("#miejsca");
  */
 const miejsca_na_rzad = document.querySelector("#miejsca-na-rzad");
 /**
- * @type {HTMLElement | null}
+ * @type {HTMLTableElement | null}
  */
 const cinema_display = document.querySelector(".cinema");
 /**
@@ -121,9 +121,7 @@ if (create_button && miejsca && miejsca_na_rzad && cinema_display && tickets_adu
 
         configure_price();
         show_reserved_seats(reserved_seats_display);
-        console.log(`Reserved seats: ${reserved_seats}`);
         refresh_cinema();
-
     });
 }
 
@@ -131,10 +129,18 @@ if (reserve_button) {
     reserve_button.addEventListener("click", function(/** @type {Event} */ event) {
         event.preventDefault();
 
+        clear_warnings();
+
         const number_reserved_seats = count_reserved_seats();
+
+        if (number_reserved_seats === 0) {
+            create_warning("Brak wybranych miejsc!");
+        }
+
         configure_price(number_reserved_seats);
         if (reserved_seats_display_nullable) {
             const reserved_seats_display = /** @type {HTMLUListElement} */ (reserved_seats_display_nullable);
+            clear_all_children(reserved_seats_display);
             show_reserved_seats(reserved_seats_display);
         }
 
@@ -168,14 +174,33 @@ refresh_cinema();
  * @param {HTMLUListElement} display 
  */
 function show_reserved_seats(display) {
-    reserved_seats.sort((a, b) => a - b);
-    reserved_seats.forEach(seat_nr => {
-        const entry = document.createElement("li");
-        const rzad = Math.floor((seat_nr - 1) / current_ilosc_miejsc_na_rzad) + 1;
-        entry.innerText = `Rząd nr: ${rzad}, miejsce nr: ${seat_nr}`;
+    /**
+     * @type {HTMLElement | null}
+     */
+    const wrapper_nullable = document.querySelector(".reserved-seats-wrapped");
+    if (reserved_seats.length > 0) {
+        if (wrapper_nullable) {
+            const wrapper = /** @type {HTMLElement} */ (wrapper_nullable);
+            wrapper.style.display = "block";
+        }
 
-        display.appendChild(entry);
-    });
+        display.style.display = "block";
+        reserved_seats.sort((a, b) => a - b);
+        reserved_seats.forEach(seat_nr => {
+            const entry = document.createElement("li");
+            const rzad = Math.floor((seat_nr - 1) / current_ilosc_miejsc_na_rzad) + 1;
+            entry.innerText = `Rząd nr: ${rzad}, miejsce nr: ${seat_nr}`;
+
+            display.appendChild(entry);
+        });
+    } else {
+        if (wrapper_nullable) {
+            const wrapper = /** @type {HTMLElement} */ (wrapper_nullable);
+            wrapper.style.display = "none";
+        }
+
+        display.style.display = "none";
+    }
 }
 
 /**
@@ -225,7 +250,15 @@ function configure_price(number_reserved_seats = 0) {
              */
             const final_price = Number(tickets_adult.value) * adult_current_price + Number(tickets_child.value) * child_current_price;
 
-            price_text.innerText = `${final_price}`;
+            if (adult_current_price === 0) {
+                create_warning("Cena biletów normalnych wynosi 0zł! Czy na pewno ustaliłeś cenę?");
+            }
+
+            if (child_current_price === 0) {
+                create_warning("Cena biletów ulgowych wynosi 0zł! Czy na pewno ustaliłeś cenę?");
+            }
+
+            price_text.innerText = `${final_price.toFixed(2)}`;
             return;
         }
 
@@ -273,7 +306,9 @@ function register_seat_callback(button) {
 
         const button = /** @type {HTMLButtonElement} */ (event_target);
         click_button(button);
-        update_tickets_count();
+        if (button.value != '2') {
+            update_tickets_count();
+        }
     });
 }
 
@@ -369,7 +404,6 @@ function click_button(button) {
             break;
         case 2:
             button.style.backgroundColor = "gray";
-            reserved_seats.splice(reserved_seats.indexOf(Number(button.innerText)), 1);
             break;
         default:
             console.error(`Invalid button value!: "${button_value}"`);
@@ -404,18 +438,19 @@ function format_button(button, mode) {
  * @param {number} seat_number_start 
  * @param {number} row_number 
  * @param {number} number_of_seats 
- * @param {Element} parent
+ * @param {HTMLTableElement} parent
  */
 function create_seat_row(seat_number_start, row_number, number_of_seats, parent) {
+    
     /**
      * @type {HTMLDivElement}
      */
-    const row_item = document.createElement("div");
+    const row_item = document.createElement("tr");
 
     /**
      * @type {HTMLHeadElement}
      */
-    const row_number_indicator = document.createElement("h4");
+    const row_number_indicator = document.createElement("th");
     row_number_indicator.className = "row-indicator";
     row_number_indicator.innerText = `${row_number}`;
     row_item.appendChild(row_number_indicator);
@@ -436,7 +471,13 @@ function create_seat_row(seat_number_start, row_number, number_of_seats, parent)
         format_button(button, 1);
         register_seat_callback(button);
 
-        row_item.appendChild(button);
+        /**
+         * @type {HTMLTableCellElement}
+         */
+        const table_item = document.createElement("td");
+        table_item.appendChild(button)
+
+        row_item.appendChild(table_item);
         seat_number += 1;
     }
 
@@ -461,5 +502,50 @@ function refresh_cinema() {
         } else {
             cinema_wrapper.style.display = "flex";
         }
+    }
+}
+
+/**
+ * @param {HTMLElement} element
+ */
+function clear_all_children(element) {
+    while (element.firstChild) {
+        element.removeChild(element.firstChild);
+    }
+}
+
+/**
+ * @param {string} msg
+ */
+function create_warning(msg) {
+    /**
+     * @type {HTMLElement | null}
+     */
+    const display_warning_nullable = document.querySelector(".display-warning");
+
+    if (display_warning_nullable) {
+        const display_warning = /** @type {HTMLElement} */ (display_warning_nullable);
+
+        const element = document.createElement("p");
+        element.className = "warning";
+        element.innerText = msg;
+
+        display_warning.appendChild(element);
+    } else {
+        console.warn("No display-warning!");
+    }
+}
+
+function clear_warnings() {
+    /**
+     * @type {HTMLElement | null}
+     */
+    const display_warning_nullable = document.querySelector(".display-warning");
+
+    if (display_warning_nullable) {
+        const display_warning = /** @type {HTMLElement} */ (display_warning_nullable);
+        clear_all_children(display_warning);
+    } else {
+        console.warn("No display-warning!");
     }
 }
